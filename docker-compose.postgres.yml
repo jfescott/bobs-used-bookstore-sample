@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=YourStrong@Passw0rd123
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bookstore-postgres:
+    build: .
+    ports:
+      - "5100:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__BookstoreDbDefaultConnection=Host=postgres;Port=5432;Database=postgres;Username=postgres;Password=YourStrong@Passw0rd123;
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
